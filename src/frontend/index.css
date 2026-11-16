@@ -1,0 +1,376 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * ============================================================================
+ * MiniGPT Lab - Design Tokens
+ * ============================================================================
+ *
+ * DESIGN INTENT
+ * This is an instrument panel, not a landing page. The people using it are
+ * reading numbers that change several times a second and comparing curves that
+ * differ by tenths of a point. That dictates the whole visual language:
+ *
+ * - A dark, low-chroma surface palette, so the only saturated colour on screen
+ *   is data. If the chrome competes with the chart, the chart loses.
+ * - Tabular monospace figures for every metric, so digits do not shift
+ *   horizontally as values change. A loss readout that jitters while updating
+ *   is genuinely harder to read.
+ * - A tight, consistent spacing scale and 1px borders rather than shadows.
+ *   Shadows imply depth and physicality; a dense data tool wants flat,
+ *   unambiguous regions.
+ * - Semantic colour only: one accent for interactive elements, and a fixed
+ *   series palette for data, chosen to stay distinguishable in both themes and
+ *   under the common forms of colour-vision deficiency.
+ *
+ * Both themes are defined. The tokens are plain CSS custom properties so they
+ * work in Tailwind arbitrary values, inline styles and SVG alike.
+ */
+
+:root {
+  /* --- Surfaces: four levels, lowest to highest ------------------------- */
+  --surface-base: #0a0c10;      /* page background */
+  --surface-raised: #11141b;    /* panels */
+  --surface-overlay: #171b24;   /* popovers, dialogs, table headers */
+  --surface-input: #0d1016;     /* form fields, code blocks */
+  --surface-hover: #1c212c;
+
+  /* --- Borders ---------------------------------------------------------- */
+  --border-subtle: #1e2430;
+  --border-default: #2a3140;
+  --border-strong: #3b4454;
+
+  /* --- Text: a four-step hierarchy -------------------------------------- */
+  --text-primary: #e8ecf4;
+  --text-secondary: #9aa6bb;
+  --text-tertiary: #6b7688;
+  --text-disabled: #49525f;
+
+  /* --- Accent (interactive) --------------------------------------------- */
+  --accent: #4f8dff;
+  --accent-hover: #6b9fff;
+  --accent-subtle: rgba(79, 141, 255, 0.12);
+  --accent-border: rgba(79, 141, 255, 0.38);
+  --accent-text: #9cc0ff;
+
+  /* --- Status ----------------------------------------------------------- */
+  --success: #3ecf8e;
+  --success-subtle: rgba(62, 207, 142, 0.12);
+  --warning: #f5a623;
+  --warning-subtle: rgba(245, 166, 35, 0.12);
+  --danger: #f45b69;
+  --danger-subtle: rgba(244, 91, 105, 0.12);
+  --info: #4f8dff;
+
+  /*
+   * --- Data series ------------------------------------------------------
+   * Fixed assignments, not a rotating palette. `train` and `val` always mean
+   * the same colour in every chart in the app, so the eye learns them once.
+   * Hues are spaced for distinguishability rather than for prettiness.
+   */
+  --series-train: #4f8dff;   /* blue   - training loss */
+  --series-val: #f5a623;     /* amber  - validation loss */
+  --series-lr: #a78bfa;      /* violet - learning rate */
+  --series-grad: #3ecf8e;    /* green  - gradient norm */
+  --series-throughput: #38bdf8;
+  --series-muted: #5a6478;
+
+  /* --- Heatmap ramp (attention) ---------------------------------------- */
+  --heat-0: #0d1016;
+  --heat-1: #16304d;
+  --heat-2: #1d5a8a;
+  --heat-3: #2a8bbf;
+  --heat-4: #4fc3e8;
+  --heat-5: #c7f0ff;
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+  /* --- Radii: small, consistent ---------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+
+  color-scheme: dark;
+}
+
+/*
+ * Light theme. Applied when the user explicitly asks for it, or when the OS
+ * prefers light and the user has not overridden it.
+ */
+:root[data-theme='light'] {
+  --surface-base: #f7f8fa;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-input: #f1f3f7;
+  --surface-hover: #eceff4;
+
+  --border-subtle: #e4e8ef;
+  --border-default: #d4dae4;
+  --border-strong: #b6bfcd;
+
+  --text-primary: #10151f;
+  --text-secondary: #4d586b;
+  --text-tertiary: #6f7a8c;
+  --text-disabled: #a4adbb;
+
+  --accent: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-subtle: rgba(37, 99, 235, 0.09);
+  --accent-border: rgba(37, 99, 235, 0.32);
+  --accent-text: #1d4ed8;
+
+  --success: #0f9d63;
+  --success-subtle: rgba(15, 157, 99, 0.1);
+  --warning: #b06d00;
+  --warning-subtle: rgba(176, 109, 0, 0.1);
+  --danger: #d12b3d;
+  --danger-subtle: rgba(209, 43, 61, 0.1);
+  --info: #2563eb;
+
+  --series-train: #2563eb;
+  --series-val: #c2690a;
+  --series-lr: #7c3aed;
+  --series-grad: #0f9d63;
+  --series-throughput: #0284c7;
+  --series-muted: #94a1b5;
+
+  --heat-0: #f1f3f7;
+  --heat-1: #cfe4f5;
+  --heat-2: #9bcbe9;
+  --heat-3: #5ba8d4;
+  --heat-4: #2a7fb0;
+  --heat-5: #0d4c72;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--surface-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /*
+   * Enable OpenType tabular figures and contextual alternates globally.
+   * `tnum` is the important one: it makes every digit the same width, so a
+   * metric updating from 1.111 to 2.999 does not shift the characters around
+   * it. Without this, live readouts visibly twitch.
+   */
+  font-feature-settings: 'tnum' 1, 'cv05' 1, 'ss01' 1;
+}
+
+/* ---------------------------------------------------------------------------
+ * Component classes
+ * Used where the same combination recurs often enough that a Tailwind chain
+ * would hurt readability more than a named class.
+ * ------------------------------------------------------------------------- */
+@layer components {
+  /* Every numeric readout. Tabular, tight, and never italic. */
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+
+  /* Small uppercase label above a value or section. */
+  .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+  }
+
+  .panel {
+    background-color: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+
+  /* A focus ring that is clearly visible on both themes. */
+  .focus-ring {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+ * Form controls
+ * Restyled from scratch because the native dark-mode appearance of range
+ * inputs and selects differs substantially across browsers.
+ * ------------------------------------------------------------------------- */
+
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+}
+
+input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-default);
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 13px;
+  height: 13px;
+  margin-top: -4.5px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+  transition: transform 0.1s ease;
+}
+
+input[type='range']:hover::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+input[type='range']:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--accent-subtle);
+}
+
+input[type='range']:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+input[type='range']::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border-default);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+}
+
+/* Remove the spin buttons from number inputs: they are a mis-click hazard
+ * next to values where a single step can change a run's behaviour. */
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/* ---------------------------------------------------------------------------
+ * Scrollbars - thin and unobtrusive, so they do not read as content.
+ * ------------------------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::selection {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------
+ * Motion
+ * One shared pulse for "live" indicators, and a blanket reduced-motion
+ * override. Someone watching a training run for twenty minutes should not be
+ * subjected to animation they did not ask for.
+ * ------------------------------------------------------------------------- */
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes caret-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* The streaming-generation caret, so it is visible that tokens are arriving. */
+.caret::after {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  background: var(--accent);
+  animation: caret-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

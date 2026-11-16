@@ -1,2 +1,15 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+# Normalize all text to LF in the repository.
+#
+# Without this, `core.autocrlf=true` on Windows stores CRLF-converted content
+# and every tool that writes LF (Prettier, editors, scripts) produces spurious
+# whole-file diffs. Setting it before the first content commit costs nothing;
+# adding it later rewrites every file at once.
+* text=auto eol=lf
+
+# Binary formats - never touch these.
+*.png binary
+*.jpg binary
+*.ico binary
+*.mgpt binary
+*.woff binary
+*.woff2 binary

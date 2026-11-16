@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Generated at runtime. These are reproducible from a seed and a config,
+# and checkpoints are large binaries, so none of it belongs in git.
+data/
+checkpoints/
+experiments/
+shots/
+
+# Local scratch
+*.log
+.DS_Store
+.env
+.env.local
+
+# Editor
+.vscode/
+.idea/
+
+# Obsolete screenshots of the previous UI, kept locally but not committed.
+app_screenshot*.png
